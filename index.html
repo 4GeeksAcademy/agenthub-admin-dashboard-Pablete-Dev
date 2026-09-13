@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AgentHub — Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = { darkMode: 'class' };
+</script>
+</head>
+<body class="bg-gray-100 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
+
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="hidden md:flex md:flex-col md:w-64 shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
+      <div class="h-16 flex items-center px-6 border-b border-gray-200 dark:border-gray-700">
+        <span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">AgentHub</span>
+      </div>
+      <nav class="flex-1 px-3 py-4 space-y-1" aria-label="Navegación principal">
+        <button type="button" data-section="dashboard"
+          class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium">
+          <span aria-hidden="true">📊</span> Dashboard
+        </button>
+        <button type="button" data-section="usuarios"
+          class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium">
+          <span aria-hidden="true">👥</span> Gestión de usuarios
+        </button>
+        <button type="button" data-section="agentes"
+          class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium">
+          <span aria-hidden="true">🤖</span> Gestión de agentes
+        </button>
+        <button type="button" data-section="skills"
+          class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium">
+          <span aria-hidden="true">🧩</span> Skills
+        </button>
+        <button type="button" data-section="contrataciones"
+          class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium">
+          <span aria-hidden="true">📄</span> Contrataciones
+        </button>
+        <button type="button" data-section="errores"
+          class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium">
+          <span aria-hidden="true">🚨</span> Log de errores
+        </button>
+      </nav>
+    </aside>
+
+    <!-- Main column -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+      <!-- Header / Topbar -->
+      <header class="h-16 flex items-center justify-between px-4 md:px-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shrink-0">
+        <h1 id="section-title" class="text-lg font-semibold">Dashboard</h1>
+        <button type="button" id="theme-toggle"
+          class="flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-300 dark:border-gray-600 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">
+          <span id="theme-icon" aria-hidden="true">🌙</span>
+          <span id="theme-label">Modo oscuro</span>
+        </button>
+      </header>
+
+      <!-- Main content -->
+      <main class="flex-1 overflow-y-auto p-4 md:p-6">
+
+        <!-- Dashboard -->
+        <section id="section-dashboard" data-section-content>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex items-center gap-4">
+              <span class="text-3xl" aria-hidden="true">💰</span>
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Ingresos totales</p>
+                <p class="text-2xl font-bold">€48,320</p>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex items-center gap-4">
+              <span class="text-3xl" aria-hidden="true">📉</span>
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Pérdidas por descuentos</p>
+                <p class="text-2xl font-bold">€3,150</p>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex items-center gap-4">
+              <span class="text-3xl" aria-hidden="true">✅</span>
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Agentes activos</p>
+                <p class="text-2xl font-bold">27</p>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex items-center gap-4">
+              <span class="text-3xl" aria-hidden="true">⚠️</span>
+              <div>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Agentes fallando</p>
+                <p class="text-2xl font-bold">4</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 w-full h-64 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
+            <p class="text-gray-400 dark:text-gray-500 text-sm">Gráfico de actividad semanal — próximamente</p>
+          </div>
+        </section>
+
+        <!-- Gestión de usuarios -->
+        <section id="section-usuarios" data-section-content class="hidden">
+          <p class="text-gray-500 dark:text-gray-400">Tabla de usuarios (pendiente de implementar).</p>
+        </section>
+
+        <!-- Gestión de agentes -->
+        <section id="section-agentes" data-section-content class="hidden">
+          <p class="text-gray-500 dark:text-gray-400">Listado de agentes (pendiente de implementar).</p>
+        </section>
+
+        <!-- Skills -->
+        <section id="section-skills" data-section-content class="hidden">
+          <p class="text-gray-500 dark:text-gray-400">Listado de skills (pendiente de implementar).</p>
+        </section>
+
+        <!-- Contrataciones -->
+        <section id="section-contrataciones" data-section-content class="hidden">
+          <p class="text-gray-500 dark:text-gray-400">Tabla de contrataciones (pendiente de implementar).</p>
+        </section>
+
+        <!-- Log de errores -->
+        <section id="section-errores" data-section-content class="hidden">
+          <p class="text-gray-500 dark:text-gray-400">Log de errores (pendiente de implementar).</p>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const sectionTitles = {
+      dashboard: 'Dashboard',
+      usuarios: 'Gestión de usuarios',
+      agentes: 'Gestión de agentes',
+      skills: 'Skills',
+      contrataciones: 'Contrataciones de agentes',
+      errores: 'Log de errores',
+    };
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sectionTitle = document.getElementById('section-title');
+
+    function setActiveSection(name) {
+      document.querySelectorAll('[data-section-content]').forEach((el) => {
+        el.classList.toggle('hidden', el.id !== `section-${name}`);
+      });
+      navLinks.forEach((btn) => {
+        const isActive = btn.dataset.section === name;
+        btn.classList.toggle('bg-indigo-50', isActive);
+        btn.classList.toggle('text-indigo-600', isActive);
+        btn.classList.toggle('dark:bg-gray-700', isActive);
+        btn.classList.toggle('dark:text-indigo-400', isActive);
+        btn.classList.toggle('text-gray-600', !isActive);
+        btn.classList.toggle('dark:text-gray-300', !isActive);
+      });
+      sectionTitle.textContent = sectionTitles[name];
+    }
+
+    navLinks.forEach((btn) => {
+      btn.addEventListener('click', () => setActiveSection(btn.dataset.section));
+    });
+
+    setActiveSection('dashboard');
+
+    // Theme toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const themeLabel = document.getElementById('theme-label');
+    const html = document.documentElement;
+
+    function applyTheme(isDark) {
+      html.classList.toggle('dark', isDark);
+      themeIcon.textContent = isDark ? '☀️' : '🌙';
+      themeLabel.textContent = isDark ? 'Modo claro' : 'Modo oscuro';
+    }
+
+    applyTheme(false);
+
+    themeToggle.addEventListener('click', () => {
+      applyTheme(!html.classList.contains('dark'));
+    });
+  </script>
+</body>
+</html>
