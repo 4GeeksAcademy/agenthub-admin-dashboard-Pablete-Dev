@@ -122,7 +122,9 @@
 
         <!-- Gestión de agentes -->
         <section id="section-agentes" data-section-content class="hidden">
-          <p class="text-gray-500 dark:text-gray-400">Listado de agentes (pendiente de implementar).</p>
+          <div id="agents-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- tarjetas generadas por JS -->
+          </div>
         </section>
 
         <!-- Skills -->
@@ -154,6 +156,26 @@
       </div>
       <div id="user-modal-body" class="px-5 py-4 space-y-2 text-sm">
         <!-- contenido generado por JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: configurar agente -->
+  <div id="agent-modal-backdrop" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-lg">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold">Configurar agente</h2>
+        <button type="button" id="agent-modal-close" aria-label="Cerrar"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">&times;</button>
+      </div>
+      <div class="px-5 py-4 space-y-3 text-sm">
+        <p><span class="font-semibold">Nombre:</span> <span id="agent-modal-name"></span></p>
+        <p><span class="font-semibold">Propietario:</span> <span id="agent-modal-owner"></span></p>
+        <div>
+          <label for="agent-modal-prompt" class="block font-semibold mb-1">Prompt de sistema</label>
+          <textarea id="agent-modal-prompt" rows="6"
+            class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
       </div>
     </div>
   </div>
@@ -314,6 +336,125 @@
       if (e.target.closest('.action-delete')) {
         users = users.filter((u) => u.id !== userId);
         row.remove();
+      }
+    });
+
+    // --- Gestión de agentes ---
+    const agentStatusStyles = {
+      Activo: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      Inactivo: 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-200',
+      'Con errores': 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+    };
+
+    let agents = [
+      { id: 1, name: 'SupportBot', owner: 'Acme Corp', status: 'Activo', skills: ['Atención al cliente', 'FAQ automática'], prompt: 'Eres un asistente de soporte al cliente amable y resolutivo para Acme Corp.' },
+      { id: 2, name: 'SalesBot', owner: 'Northwind Ltd.', status: 'Activo', skills: ['Cualificación de leads', 'Generación de reportes'], prompt: 'Eres un asistente comercial que ayuda a cualificar leads y generar reportes de ventas.' },
+      { id: 3, name: 'DataAnalystBot', owner: 'Globex Inc.', status: 'Con errores', skills: ['Análisis de datos', 'Generación de reportes', 'Visualización'], prompt: 'Eres un analista de datos que resume métricas clave y genera informes ejecutivos.' },
+      { id: 4, name: 'HRAssistant', owner: 'Initech', status: 'Inactivo', skills: ['Atención al cliente', 'Cualificación de leads'], prompt: 'Eres un asistente de recursos humanos que responde preguntas frecuentes de empleados.' },
+    ];
+
+    const agentsList = document.getElementById('agents-list');
+
+    function renderAgents() {
+      agentsList.innerHTML = '';
+      agents.forEach((agent) => {
+        const card = document.createElement('div');
+        card.dataset.agentId = agent.id;
+        card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow p-4 relative';
+        card.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="font-semibold">${agent.name}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Propietario: ${agent.owner}</p>
+            </div>
+            <div class="flex items-start gap-2">
+              <span class="px-2 py-1 rounded-full text-xs font-medium ${agentStatusStyles[agent.status]}">${agent.status}</span>
+              <div class="relative">
+                <button type="button" class="dropdown-toggle px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Acciones">&#8942;</button>
+                <div class="dropdown-menu hidden absolute right-0 mt-1 w-40 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-10 text-left">
+                  <button type="button" class="action-configure w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Configurar</button>
+                  <button type="button" class="action-delete-agent w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600">Eliminar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="skills-toggle mt-3 flex items-center gap-1 text-sm text-indigo-600 dark:text-indigo-400">
+            <span class="skills-toggle-arrow inline-block transition-transform duration-300">&#9656;</span>
+            <span class="skills-toggle-label">Ver skills</span>
+          </button>
+          <div class="skills-panel overflow-hidden max-h-0 opacity-0 transition-all duration-300 ease-in-out">
+            <ul class="mt-2 flex flex-wrap gap-2 pb-1">
+              ${agent.skills.map((s) => `<li class="px-2 py-1 rounded-full text-xs bg-indigo-50 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">${s}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+        agentsList.appendChild(card);
+      });
+    }
+
+    renderAgents();
+
+    // Expandir/colapsar skills
+    agentsList.addEventListener('click', (e) => {
+      const toggle = e.target.closest('.skills-toggle');
+      if (!toggle) return;
+      const card = toggle.closest('[data-agent-id]');
+      const panel = card.querySelector('.skills-panel');
+      const arrow = card.querySelector('.skills-toggle-arrow');
+      const label = card.querySelector('.skills-toggle-label');
+      const isExpanded = panel.classList.contains('max-h-40');
+
+      if (isExpanded) {
+        panel.classList.remove('max-h-40', 'opacity-100');
+        panel.classList.add('max-h-0', 'opacity-0');
+        arrow.classList.remove('rotate-90');
+        label.textContent = 'Ver skills';
+      } else {
+        panel.classList.remove('max-h-0', 'opacity-0');
+        panel.classList.add('max-h-40', 'opacity-100');
+        arrow.classList.add('rotate-90');
+        label.textContent = 'Ocultar skills';
+      }
+    });
+
+    // Modal configurar agente
+    const agentModalBackdrop = document.getElementById('agent-modal-backdrop');
+    const agentModalClose = document.getElementById('agent-modal-close');
+    const agentModalName = document.getElementById('agent-modal-name');
+    const agentModalOwner = document.getElementById('agent-modal-owner');
+    const agentModalPrompt = document.getElementById('agent-modal-prompt');
+
+    function openAgentModal(agent) {
+      agentModalName.textContent = agent.name;
+      agentModalOwner.textContent = agent.owner;
+      agentModalPrompt.value = agent.prompt;
+      agentModalBackdrop.classList.remove('hidden');
+    }
+
+    function closeAgentModal() {
+      agentModalBackdrop.classList.add('hidden');
+    }
+
+    agentModalClose.addEventListener('click', closeAgentModal);
+    agentModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === agentModalBackdrop) closeAgentModal();
+    });
+
+    agentsList.addEventListener('click', (e) => {
+      const card = e.target.closest('[data-agent-id]');
+      if (!card) return;
+      const agentId = Number(card.dataset.agentId);
+
+      if (e.target.closest('.action-configure')) {
+        const agent = agents.find((a) => a.id === agentId);
+        if (agent) openAgentModal(agent);
+        card.querySelector('.dropdown-menu')?.classList.add('hidden');
+      }
+
+      if (e.target.closest('.action-delete-agent')) {
+        agents = agents.filter((a) => a.id !== agentId);
+        card.remove();
       }
     });
   </script>
