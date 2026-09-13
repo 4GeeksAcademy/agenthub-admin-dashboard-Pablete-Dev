@@ -129,7 +129,16 @@
 
         <!-- Skills -->
         <section id="section-skills" data-section-content class="hidden">
-          <p class="text-gray-500 dark:text-gray-400">Listado de skills (pendiente de implementar).</p>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-4">
+            <p class="text-sm text-gray-600 dark:text-gray-300">
+              Una <span class="font-semibold">skill</span> es una capacidad modular que un agente IA puede activar,
+              como "Atención al cliente", "Análisis de datos" o "Generación de reportes". Cada agente puede combinar
+              varias skills según el plan contratado por el cliente.
+            </p>
+          </div>
+          <div id="skills-list" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <!-- tarjetas generadas por JS -->
+          </div>
         </section>
 
         <!-- Contrataciones -->
@@ -176,6 +185,20 @@
           <textarea id="agent-modal-prompt" rows="6"
             class="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: detalle de skill -->
+  <div id="skill-modal-backdrop" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold">Detalle de skill</h2>
+        <button type="button" id="skill-modal-close" aria-label="Cerrar"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">&times;</button>
+      </div>
+      <div id="skill-modal-body" class="px-5 py-4 space-y-2 text-sm">
+        <!-- contenido generado por JS -->
       </div>
     </div>
   </div>
@@ -454,6 +477,86 @@
 
       if (e.target.closest('.action-delete-agent')) {
         agents = agents.filter((a) => a.id !== agentId);
+        card.remove();
+      }
+    });
+
+    // --- Skills ---
+    let skills = [
+      { id: 1, name: 'Atención al cliente', description: 'Responde consultas frecuentes y da soporte de primer nivel a los usuarios finales.', agentsCount: 2, agentsUsing: 'SupportBot, HRAssistant', price: '€15/mes' },
+      { id: 2, name: 'Análisis de datos', description: 'Procesa datasets y extrae métricas relevantes para el negocio.', agentsCount: 1, agentsUsing: 'DataAnalystBot', price: '€25/mes' },
+      { id: 3, name: 'Generación de reportes', description: 'Crea informes ejecutivos a partir de datos estructurados.', agentsCount: 2, agentsUsing: 'SalesBot, DataAnalystBot', price: '€20/mes' },
+      { id: 4, name: 'Cualificación de leads', description: 'Evalúa y prioriza oportunidades comerciales entrantes.', agentsCount: 2, agentsUsing: 'SalesBot, HRAssistant', price: '€18/mes' },
+      { id: 5, name: 'Visualización', description: 'Genera gráficos y paneles visuales a partir de resultados de análisis.', agentsCount: 1, agentsUsing: 'DataAnalystBot', price: '€12/mes' },
+    ];
+
+    const skillsList = document.getElementById('skills-list');
+
+    function renderSkills() {
+      skillsList.innerHTML = '';
+      skills.forEach((skill) => {
+        const card = document.createElement('div');
+        card.dataset.skillId = skill.id;
+        card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow p-4 relative';
+        card.innerHTML = `
+          <div class="flex items-start justify-between">
+            <div>
+              <p class="font-semibold">${skill.name}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">${skill.description}</p>
+              <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Agentes que la usan: ${skill.agentsCount}</p>
+            </div>
+            <div class="relative">
+              <button type="button" class="dropdown-toggle px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Acciones">&#8942;</button>
+              <div class="dropdown-menu hidden absolute right-0 mt-1 w-40 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-10 text-left">
+                <button type="button" class="action-skill-detail w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Ver detalle</button>
+                <button type="button" class="action-delete-skill w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600">Eliminar</button>
+              </div>
+            </div>
+          </div>
+        `;
+        skillsList.appendChild(card);
+      });
+    }
+
+    renderSkills();
+
+    // Modal detalle de skill
+    const skillModalBackdrop = document.getElementById('skill-modal-backdrop');
+    const skillModalBody = document.getElementById('skill-modal-body');
+    const skillModalClose = document.getElementById('skill-modal-close');
+
+    function openSkillModal(skill) {
+      skillModalBody.innerHTML = `
+        <p><span class="font-semibold">Nombre:</span> ${skill.name}</p>
+        <p><span class="font-semibold">Descripción:</span> ${skill.description}</p>
+        <p><span class="font-semibold">Agentes que la usan:</span> ${skill.agentsUsing}</p>
+        <p><span class="font-semibold">Precio individual:</span> ${skill.price}</p>
+      `;
+      skillModalBackdrop.classList.remove('hidden');
+    }
+
+    function closeSkillModal() {
+      skillModalBackdrop.classList.add('hidden');
+    }
+
+    skillModalClose.addEventListener('click', closeSkillModal);
+    skillModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === skillModalBackdrop) closeSkillModal();
+    });
+
+    skillsList.addEventListener('click', (e) => {
+      const card = e.target.closest('[data-skill-id]');
+      if (!card) return;
+      const skillId = Number(card.dataset.skillId);
+
+      if (e.target.closest('.action-skill-detail')) {
+        const skill = skills.find((s) => s.id === skillId);
+        if (skill) openSkillModal(skill);
+        card.querySelector('.dropdown-menu')?.classList.add('hidden');
+      }
+
+      if (e.target.closest('.action-delete-skill')) {
+        skills = skills.filter((s) => s.id !== skillId);
         card.remove();
       }
     });
