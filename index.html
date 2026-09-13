@@ -102,7 +102,22 @@
 
         <!-- Gestión de usuarios -->
         <section id="section-usuarios" data-section-content class="hidden">
-          <p class="text-gray-500 dark:text-gray-400">Tabla de usuarios (pendiente de implementar).</p>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 uppercase text-xs">
+                <tr>
+                  <th class="px-4 py-3">Nombre</th>
+                  <th class="px-4 py-3">Email</th>
+                  <th class="px-4 py-3">Plan</th>
+                  <th class="px-4 py-3">Estado</th>
+                  <th class="px-4 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- filas generadas por JS -->
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <!-- Gestión de agentes -->
@@ -126,6 +141,20 @@
         </section>
 
       </main>
+    </div>
+  </div>
+
+  <!-- Modal: detalle de usuario -->
+  <div id="user-modal-backdrop" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold">Detalle de usuario</h2>
+        <button type="button" id="user-modal-close" aria-label="Cerrar"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">&times;</button>
+      </div>
+      <div id="user-modal-body" class="px-5 py-4 space-y-2 text-sm">
+        <!-- contenido generado por JS -->
+      </div>
     </div>
   </div>
 
@@ -180,6 +209,112 @@
 
     themeToggle.addEventListener('click', () => {
       applyTheme(!html.classList.contains('dark'));
+    });
+
+    // --- Gestión de usuarios ---
+    const statusStyles = {
+      Activo: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      Suspendido: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      Pendiente: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+    };
+
+    let users = [
+      { id: 1, name: 'Laura Gómez', email: 'laura.gomez@example.com', plan: 'Enterprise', status: 'Activo', joined: '2024-02-10', agents: 'SupportBot, SalesBot' },
+      { id: 2, name: 'Carlos Ruiz', email: 'carlos.ruiz@example.com', plan: 'Pro', status: 'Pendiente', joined: '2024-05-22', agents: 'SupportBot' },
+      { id: 3, name: 'Marta Fernández', email: 'marta.fernandez@example.com', plan: 'Free', status: 'Suspendido', joined: '2023-11-03', agents: '—' },
+      { id: 4, name: 'Javier López', email: 'javier.lopez@example.com', plan: 'Pro', status: 'Activo', joined: '2024-01-15', agents: 'DataAnalystBot' },
+      { id: 5, name: 'Sofía Torres', email: 'sofia.torres@example.com', plan: 'Enterprise', status: 'Activo', joined: '2023-09-28', agents: 'SupportBot, DataAnalystBot, SalesBot' },
+      { id: 6, name: 'Diego Martín', email: 'diego.martin@example.com', plan: 'Free', status: 'Pendiente', joined: '2024-06-01', agents: '—' },
+    ];
+
+    const usersTbody = document.getElementById('users-tbody');
+
+    function renderUsers() {
+      usersTbody.innerHTML = '';
+      users.forEach((user) => {
+        const tr = document.createElement('tr');
+        tr.dataset.userId = user.id;
+        tr.innerHTML = `
+          <td class="px-4 py-3 font-medium">${user.name}</td>
+          <td class="px-4 py-3 text-gray-500 dark:text-gray-400">${user.email}</td>
+          <td class="px-4 py-3">${user.plan}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-1 rounded-full text-xs font-medium ${statusStyles[user.status]}">${user.status}</span>
+          </td>
+          <td class="px-4 py-3 text-right relative">
+            <button type="button" class="dropdown-toggle px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Acciones">&#8942;</button>
+            <div class="dropdown-menu hidden absolute right-4 mt-1 w-40 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-10 text-left">
+              <button type="button" class="action-detail w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Ver detalle</button>
+              <button type="button" class="action-delete w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600">Eliminar</button>
+            </div>
+          </td>
+        `;
+        usersTbody.appendChild(tr);
+      });
+    }
+
+    renderUsers();
+
+    // Dropdown handling (delegado, un solo dropdown abierto a la vez)
+    document.addEventListener('click', (e) => {
+      const toggle = e.target.closest('.dropdown-toggle');
+      const openMenus = document.querySelectorAll('.dropdown-menu:not(.hidden)');
+
+      if (toggle) {
+        const menu = toggle.nextElementSibling;
+        const wasOpen = !menu.classList.contains('hidden');
+        openMenus.forEach((m) => m.classList.add('hidden'));
+        if (!wasOpen) menu.classList.remove('hidden');
+        return;
+      }
+
+      // Click fuera de cualquier dropdown: cerrar todos
+      if (!e.target.closest('.dropdown-menu')) {
+        openMenus.forEach((m) => m.classList.add('hidden'));
+      }
+    });
+
+    // Ver detalle / Eliminar (delegado)
+    const userModalBackdrop = document.getElementById('user-modal-backdrop');
+    const userModalBody = document.getElementById('user-modal-body');
+    const userModalClose = document.getElementById('user-modal-close');
+
+    function openUserModal(user) {
+      userModalBody.innerHTML = `
+        <p><span class="font-semibold">Nombre:</span> ${user.name}</p>
+        <p><span class="font-semibold">Email:</span> ${user.email}</p>
+        <p><span class="font-semibold">Plan:</span> ${user.plan}</p>
+        <p><span class="font-semibold">Estado:</span> <span class="px-2 py-1 rounded-full text-xs font-medium ${statusStyles[user.status]}">${user.status}</span></p>
+        <p><span class="font-semibold">Fecha de alta:</span> ${user.joined}</p>
+        <p><span class="font-semibold">Agentes contratados:</span> ${user.agents}</p>
+      `;
+      userModalBackdrop.classList.remove('hidden');
+    }
+
+    function closeUserModal() {
+      userModalBackdrop.classList.add('hidden');
+    }
+
+    userModalClose.addEventListener('click', closeUserModal);
+    userModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === userModalBackdrop) closeUserModal();
+    });
+
+    usersTbody.addEventListener('click', (e) => {
+      const row = e.target.closest('tr');
+      if (!row) return;
+      const userId = Number(row.dataset.userId);
+
+      if (e.target.closest('.action-detail')) {
+        const user = users.find((u) => u.id === userId);
+        if (user) openUserModal(user);
+        row.querySelector('.dropdown-menu')?.classList.add('hidden');
+      }
+
+      if (e.target.closest('.action-delete')) {
+        users = users.filter((u) => u.id !== userId);
+        row.remove();
+      }
     });
   </script>
 </body>
