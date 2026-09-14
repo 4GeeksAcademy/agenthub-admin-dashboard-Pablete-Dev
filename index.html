@@ -143,7 +143,24 @@
 
         <!-- Contrataciones -->
         <section id="section-contrataciones" data-section-content class="hidden">
-          <p class="text-gray-500 dark:text-gray-400">Tabla de contrataciones (pendiente de implementar).</p>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 uppercase text-xs">
+                <tr>
+                  <th class="px-4 py-3">Cliente</th>
+                  <th class="px-4 py-3">Agente</th>
+                  <th class="px-4 py-3">Skills</th>
+                  <th class="px-4 py-3">Inicio</th>
+                  <th class="px-4 py-3">Fin</th>
+                  <th class="px-4 py-3">Importe</th>
+                  <th class="px-4 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="contracts-tbody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- filas generadas por JS -->
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <!-- Log de errores -->
@@ -198,6 +215,20 @@
           class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">&times;</button>
       </div>
       <div id="skill-modal-body" class="px-5 py-4 space-y-2 text-sm">
+        <!-- contenido generado por JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: detalle de contrato -->
+  <div id="contract-modal-backdrop" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold">Detalle de contrato</h2>
+        <button type="button" id="contract-modal-close" aria-label="Cerrar"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">&times;</button>
+      </div>
+      <div id="contract-modal-body" class="px-5 py-4 space-y-2 text-sm">
         <!-- contenido generado por JS -->
       </div>
     </div>
@@ -558,6 +589,119 @@
       if (e.target.closest('.action-delete-skill')) {
         skills = skills.filter((s) => s.id !== skillId);
         card.remove();
+      }
+    });
+
+    // --- Contrataciones de agentes ---
+    const contractStatusStyles = {
+      Activo: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+      Finalizado: 'bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-200',
+      Cancelado: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+    };
+
+    let contracts = [
+      {
+        id: 1, client: 'Acme Corp', agent: 'SupportBot', status: 'Activo',
+        start: '2024-01-10', end: 'Activo',
+        skillsBreakdown: [{ name: 'Atención al cliente', price: '€15/mes' }, { name: 'FAQ automática', price: '€10/mes' }],
+        total: '€300',
+      },
+      {
+        id: 2, client: 'Northwind Ltd.', agent: 'SalesBot', status: 'Activo',
+        start: '2024-03-05', end: 'Activo',
+        skillsBreakdown: [{ name: 'Cualificación de leads', price: '€18/mes' }, { name: 'Generación de reportes', price: '€20/mes' }],
+        total: '€456',
+      },
+      {
+        id: 3, client: 'Globex Inc.', agent: 'DataAnalystBot', status: 'Finalizado',
+        start: '2023-06-01', end: '2024-06-01',
+        skillsBreakdown: [{ name: 'Análisis de datos', price: '€25/mes' }, { name: 'Visualización', price: '€12/mes' }],
+        total: '€444',
+      },
+      {
+        id: 4, client: 'Initech', agent: 'HRAssistant', status: 'Cancelado',
+        start: '2024-02-15', end: '2024-04-15',
+        skillsBreakdown: [{ name: 'Atención al cliente', price: '€15/mes' }, { name: 'Cualificación de leads', price: '€18/mes' }],
+        total: '€66',
+      },
+    ];
+
+    const contractsTbody = document.getElementById('contracts-tbody');
+
+    function renderContracts() {
+      contractsTbody.innerHTML = '';
+      contracts.forEach((contract) => {
+        const tr = document.createElement('tr');
+        tr.dataset.contractId = contract.id;
+        const skillsNames = contract.skillsBreakdown.map((s) => s.name).join(', ');
+        tr.innerHTML = `
+          <td class="px-4 py-3 font-medium">${contract.client}</td>
+          <td class="px-4 py-3">${contract.agent}</td>
+          <td class="px-4 py-3 text-gray-500 dark:text-gray-400">${skillsNames}</td>
+          <td class="px-4 py-3">${contract.start}</td>
+          <td class="px-4 py-3">${contract.end}</td>
+          <td class="px-4 py-3">${contract.total}</td>
+          <td class="px-4 py-3 text-right relative">
+            <button type="button" class="dropdown-toggle px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Acciones">&#8942;</button>
+            <div class="dropdown-menu hidden absolute right-4 mt-1 w-44 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-10 text-left">
+              <button type="button" class="action-contract-detail w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Ver detalle</button>
+              <button type="button" class="action-cancel-contract w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-600">Cancelar contrato</button>
+            </div>
+          </td>
+        `;
+        contractsTbody.appendChild(tr);
+      });
+    }
+
+    renderContracts();
+
+    // Modal detalle de contrato
+    const contractModalBackdrop = document.getElementById('contract-modal-backdrop');
+    const contractModalBody = document.getElementById('contract-modal-body');
+    const contractModalClose = document.getElementById('contract-modal-close');
+
+    function openContractModal(contract) {
+      const skillsRows = contract.skillsBreakdown
+        .map((s) => `<li class="flex justify-between"><span>${s.name}</span><span>${s.price}</span></li>`)
+        .join('');
+      contractModalBody.innerHTML = `
+        <p><span class="font-semibold">Cliente:</span> ${contract.client}</p>
+        <p><span class="font-semibold">Agente:</span> ${contract.agent}</p>
+        <p><span class="font-semibold">Fecha de inicio:</span> ${contract.start}</p>
+        <p><span class="font-semibold">Fecha de fin:</span> ${contract.end}</p>
+        <p><span class="font-semibold">Estado:</span> <span class="px-2 py-1 rounded-full text-xs font-medium ${contractStatusStyles[contract.status]}">${contract.status}</span></p>
+        <div>
+          <p class="font-semibold mb-1">Skills contratadas:</p>
+          <ul class="space-y-1 text-gray-600 dark:text-gray-300">${skillsRows}</ul>
+        </div>
+        <p class="pt-2 border-t border-gray-200 dark:border-gray-700"><span class="font-semibold">Importe total:</span> ${contract.total}</p>
+      `;
+      contractModalBackdrop.classList.remove('hidden');
+    }
+
+    function closeContractModal() {
+      contractModalBackdrop.classList.add('hidden');
+    }
+
+    contractModalClose.addEventListener('click', closeContractModal);
+    contractModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === contractModalBackdrop) closeContractModal();
+    });
+
+    contractsTbody.addEventListener('click', (e) => {
+      const row = e.target.closest('tr');
+      if (!row) return;
+      const contractId = Number(row.dataset.contractId);
+
+      if (e.target.closest('.action-contract-detail')) {
+        const contract = contracts.find((c) => c.id === contractId);
+        if (contract) openContractModal(contract);
+        row.querySelector('.dropdown-menu')?.classList.add('hidden');
+      }
+
+      if (e.target.closest('.action-cancel-contract')) {
+        contracts = contracts.filter((c) => c.id !== contractId);
+        row.remove();
       }
     });
   </script>
