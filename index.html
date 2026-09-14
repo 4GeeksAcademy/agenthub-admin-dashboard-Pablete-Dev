@@ -165,7 +165,23 @@
 
         <!-- Log de errores -->
         <section id="section-errores" data-section-content class="hidden">
-          <p class="text-gray-500 dark:text-gray-400">Log de errores (pendiente de implementar).</p>
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-300 uppercase text-xs">
+                <tr>
+                  <th class="px-4 py-3">Timestamp</th>
+                  <th class="px-4 py-3">Agente</th>
+                  <th class="px-4 py-3">Tipo</th>
+                  <th class="px-4 py-3">Gravedad</th>
+                  <th class="px-4 py-3">Descripción</th>
+                  <th class="px-4 py-3 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="errors-tbody" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <!-- filas generadas por JS -->
+              </tbody>
+            </table>
+          </div>
         </section>
 
       </main>
@@ -229,6 +245,20 @@
           class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">&times;</button>
       </div>
       <div id="contract-modal-body" class="px-5 py-4 space-y-2 text-sm">
+        <!-- contenido generado por JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: detalle de error -->
+  <div id="error-modal-backdrop" class="hidden fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-lg">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h2 class="text-lg font-semibold">Detalle de error</h2>
+        <button type="button" id="error-modal-close" aria-label="Cerrar"
+          class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl leading-none">&times;</button>
+      </div>
+      <div id="error-modal-body" class="px-5 py-4 space-y-2 text-sm">
         <!-- contenido generado por JS -->
       </div>
     </div>
@@ -702,6 +732,107 @@
       if (e.target.closest('.action-cancel-contract')) {
         contracts = contracts.filter((c) => c.id !== contractId);
         row.remove();
+      }
+    });
+
+    // --- Log de errores ---
+    const severityStyles = {
+      Crítico: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+      Advertencia: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
+      Informativo: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
+      Resuelto: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+    };
+
+    let errorLogs = [
+      { id: 1, timestamp: '2024-09-01 08:12:34', agent: 'SupportBot', type: 'Timeout', severity: 'Crítico', description: 'El agente no respondió dentro del tiempo límite establecido.', trace: 'TimeoutError: request exceeded 30000ms\n  at SupportBot.handleRequest (agent.js:112)\n  at process (runtime.js:48)', resolved: false },
+      { id: 2, timestamp: '2024-09-02 11:45:02', agent: 'SalesBot', type: 'API Error', severity: 'Crítico', description: 'Fallo al conectar con el proveedor de CRM externo.', trace: 'ApiError: 503 Service Unavailable\n  at SalesBot.fetchCRM (agent.js:88)\n  at process (runtime.js:48)', resolved: false },
+      { id: 3, timestamp: '2024-09-03 15:20:47', agent: 'DataAnalystBot', type: 'Validación', severity: 'Advertencia', description: 'El dataset recibido contiene columnas con formato inesperado.', trace: 'ValidationWarning: column "revenue" expected number, got string\n  at DataAnalystBot.validateInput (agent.js:64)', resolved: false },
+      { id: 4, timestamp: '2024-09-04 09:05:19', agent: 'HRAssistant', type: 'Configuración', severity: 'Informativo', description: 'Se actualizó el prompt de sistema del agente.', trace: 'Info: system prompt updated by admin\n  at HRAssistant.updateConfig (agent.js:30)', resolved: false },
+      { id: 5, timestamp: '2024-09-05 18:33:56', agent: 'SupportBot', type: 'Rate Limit', severity: 'Advertencia', description: 'Se alcanzó el límite de peticiones por minuto.', trace: 'RateLimitWarning: 429 Too Many Requests\n  at SupportBot.handleRequest (agent.js:120)', resolved: false },
+      { id: 6, timestamp: '2024-09-06 22:10:08', agent: 'DataAnalystBot', type: 'API Error', severity: 'Crítico', description: 'Error al generar el reporte semanal automático.', trace: 'ApiError: 500 Internal Server Error\n  at DataAnalystBot.generateReport (agent.js:97)', resolved: false },
+      { id: 7, timestamp: '2024-09-07 07:48:29', agent: 'SalesBot', type: 'Info', severity: 'Informativo', description: 'Reinicio programado del agente completado correctamente.', trace: 'Info: scheduled restart completed\n  at SalesBot.restart (agent.js:15)', resolved: false },
+    ];
+
+    const errorsTbody = document.getElementById('errors-tbody');
+
+    function renderErrors() {
+      errorsTbody.innerHTML = '';
+      errorLogs.forEach((err) => {
+        const tr = document.createElement('tr');
+        tr.dataset.errorId = err.id;
+        if (err.resolved) tr.classList.add('opacity-60');
+        const badgeLabel = err.resolved ? 'Resuelto' : err.severity;
+        tr.innerHTML = `
+          <td class="px-4 py-3 whitespace-nowrap">${err.timestamp}</td>
+          <td class="px-4 py-3">${err.agent}</td>
+          <td class="px-4 py-3">${err.type}</td>
+          <td class="px-4 py-3">
+            <span class="severity-badge px-2 py-1 rounded-full text-xs font-medium ${severityStyles[badgeLabel]}">${badgeLabel}</span>
+          </td>
+          <td class="px-4 py-3 text-gray-500 dark:text-gray-400">${err.description}</td>
+          <td class="px-4 py-3 text-right relative">
+            <button type="button" class="dropdown-toggle px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Acciones">&#8942;</button>
+            <div class="dropdown-menu hidden absolute right-4 mt-1 w-44 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg z-10 text-left">
+              <button type="button" class="action-error-detail w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Ver detalle</button>
+              <button type="button" class="action-resolve-error w-full text-left px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600">Marcar como resuelto</button>
+            </div>
+          </td>
+        `;
+        errorsTbody.appendChild(tr);
+      });
+    }
+
+    renderErrors();
+
+    // Modal detalle de error
+    const errorModalBackdrop = document.getElementById('error-modal-backdrop');
+    const errorModalBody = document.getElementById('error-modal-body');
+    const errorModalClose = document.getElementById('error-modal-close');
+
+    function openErrorModal(err) {
+      const badgeLabel = err.resolved ? 'Resuelto' : err.severity;
+      errorModalBody.innerHTML = `
+        <p><span class="font-semibold">Timestamp:</span> ${err.timestamp}</p>
+        <p><span class="font-semibold">Agente:</span> ${err.agent}</p>
+        <p><span class="font-semibold">Tipo:</span> ${err.type}</p>
+        <p><span class="font-semibold">Gravedad:</span> <span class="px-2 py-1 rounded-full text-xs font-medium ${severityStyles[badgeLabel]}">${badgeLabel}</span></p>
+        <p><span class="font-semibold">Descripción:</span> ${err.description}</p>
+        <div>
+          <p class="font-semibold mb-1">Traza completa:</p>
+          <pre class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 rounded-md p-3 text-xs overflow-x-auto whitespace-pre-wrap font-mono">${err.trace}</pre>
+        </div>
+      `;
+      errorModalBackdrop.classList.remove('hidden');
+    }
+
+    function closeErrorModal() {
+      errorModalBackdrop.classList.add('hidden');
+    }
+
+    errorModalClose.addEventListener('click', closeErrorModal);
+    errorModalBackdrop.addEventListener('click', (e) => {
+      if (e.target === errorModalBackdrop) closeErrorModal();
+    });
+
+    errorsTbody.addEventListener('click', (e) => {
+      const row = e.target.closest('tr');
+      if (!row) return;
+      const errorId = Number(row.dataset.errorId);
+      const err = errorLogs.find((it) => it.id === errorId);
+      if (!err) return;
+
+      if (e.target.closest('.action-error-detail')) {
+        openErrorModal(err);
+        row.querySelector('.dropdown-menu')?.classList.add('hidden');
+      }
+
+      if (e.target.closest('.action-resolve-error')) {
+        err.resolved = true;
+        row.querySelector('.dropdown-menu')?.classList.add('hidden');
+        row.classList.add('opacity-60');
+        const badge = row.querySelector('.severity-badge');
+        badge.className = `severity-badge px-2 py-1 rounded-full text-xs font-medium ${severityStyles.Resuelto}`;
+        badge.textContent = 'Resuelto';
       }
     });
   </script>
